@@ -2,815 +2,801 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FlashFacts — Интересные факты</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FlashFacts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050510;
+  --surface:rgba(255,255,255,0.04);
+  --surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);
+  --text:#f0f0f8;
+  --text2:rgba(255,255,255,0.55);
+  --accent:#818cf8;
+  --r:24px;
+}
+html{-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100dvh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ===== CANVAS BG ===== */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
-:root {
-  --bg: #0a0a0f;
-  --card-bg: #14141f;
-  --text: #e8e8f0;
-  --text-dim: #888;
-  --radius: 20px;
+/* ===== SCREEN TRANSITIONS ===== */
+.screen{
+  position:relative;z-index:1;
+  max-width:560px;margin:0 auto;padding:0 20px;
+  min-height:100dvh;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .5s ease,transform .5s ease;
+  display:none;
 }
+.screen.active{display:block;opacity:1;transform:translateY(0)}
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
+/* ===== HOME ===== */
+.hero{padding:60px 0 40px;text-align:center}
+.logo{
+  font-size:3.2em;font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,#818cf8 0%,#c084fc 30%,#f472b6 60%,#fb923c 100%);
+  background-size:200% 200%;
+  animation:gradShift 6s ease infinite;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1.1;
 }
+@keyframes gradShift{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+.tagline{color:var(--text2);font-size:1em;margin-top:10px;font-weight:400}
 
-/* ===== Background particles ===== */
-.bg-glow {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
+/* Stats */
+.stats-row{
+  display:flex;justify-content:center;gap:40px;
+  padding:30px 0 36px;
 }
-.bg-glow::before {
-  content: '';
-  position: absolute;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
-  top: -200px; left: -200px;
-  animation: floatGlow 20s ease-in-out infinite;
+.stat-item{text-align:center}
+.stat-val{
+  font-size:2em;font-weight:800;
+  background:linear-gradient(135deg,#818cf8,#c084fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
 }
-.bg-glow::after {
-  content: '';
-  position: absolute;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 70%);
-  bottom: -150px; right: -150px;
-  animation: floatGlow 25s ease-in-out infinite reverse;
-}
-@keyframes floatGlow {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(100px, 80px); }
-}
+.stat-lbl{font-size:.7em;text-transform:uppercase;letter-spacing:2px;color:var(--text2);margin-top:2px}
 
-/* ===== Container ===== */
-.container {
-  position: relative;
-  z-index: 1;
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 20px 16px 40px;
+/* Category cards */
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:60px}
+.cat{
+  position:relative;border-radius:var(--r);padding:28px 20px 22px;
+  cursor:pointer;overflow:hidden;
+  border:1px solid var(--border);
+  transition:transform .35s cubic-bezier(.4,0,.2,1),box-shadow .35s ease;
+  -webkit-user-select:none;user-select:none;
 }
+.cat:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.cat:active{transform:scale(.96);transition:transform .1s}
+.cat .ic{font-size:3em;display:block;margin-bottom:14px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
+.cat .nm{font-weight:700;font-size:1em;line-height:1.3}
+.cat .ct{font-size:.72em;color:rgba(255,255,255,.4);margin-top:6px;font-weight:500}
+.cat .prog-mini{
+  margin-top:10px;height:4px;border-radius:4px;
+  background:rgba(255,255,255,.08);overflow:hidden;
+}
+.cat .prog-mini-fill{height:100%;border-radius:4px;transition:width .6s ease}
+/* glow overlay */
+.cat::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.06),transparent 60%);
+  pointer-events:none;
+}
+.cat::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:60%;
+  background:linear-gradient(to top,rgba(0,0,0,.3),transparent);
+  pointer-events:none;
+}
+/* cat themes */
+.cat-kz{background:linear-gradient(145deg,#0369a1,#0e7490,#155e75)}
+.cat-kz .prog-mini-fill{background:linear-gradient(90deg,#38bdf8,#06b6d4)}
+.cat-ru{background:linear-gradient(145deg,#b91c1c,#991b1b,#7f1d1d)}
+.cat-ru .prog-mini-fill{background:linear-gradient(90deg,#f87171,#ef4444)}
+.cat-world{background:linear-gradient(145deg,#4338ca,#4f46e5,#6366f1)}
+.cat-world .prog-mini-fill{background:linear-gradient(90deg,#818cf8,#a78bfa)}
+.cat-dino{background:linear-gradient(145deg,#15803d,#166534,#14532d)}
+.cat-dino .prog-mini-fill{background:linear-gradient(90deg,#4ade80,#22c55e)}
+.cat-wow{background:linear-gradient(145deg,#9333ea,#7c3aed,#6d28d9)}
+.cat-wow .prog-mini-fill{background:linear-gradient(90deg,#c084fc,#e879f9)}
+.cats .cat:last-child:nth-child(odd){grid-column:1/-1}
 
-/* ===== Header ===== */
-.header {
-  text-align: center;
-  padding: 30px 0 10px;
+/* ===== QUIZ SCREEN ===== */
+.quiz-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0 16px;
 }
-.header h1 {
-  font-size: 2em;
-  font-weight: 800;
-  background: linear-gradient(135deg, #818cf8, #e879f9, #fb923c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
+.btn-back{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);padding:10px 16px;border-radius:14px;
+  font-size:.85em;font-weight:600;cursor:pointer;
+  transition:all .2s;font-family:inherit;
 }
-.header p {
-  color: var(--text-dim);
-  font-size: 0.95em;
-  margin-top: 6px;
-}
+.btn-back:hover{background:var(--surface2)}
+.btn-back svg{width:18px;height:18px}
+.quiz-counter{font-size:.85em;color:var(--text2);font-weight:600}
 
-/* ===== Stats bar ===== */
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  padding: 16px 0 24px;
+.quiz-cat-title{
+  text-align:center;padding:8px 0 20px;
 }
-.stat {
-  text-align: center;
-}
-.stat-num {
-  font-size: 1.5em;
-  font-weight: 700;
-  color: #a78bfa;
-}
-.stat-label {
-  font-size: 0.75em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* ===== Category grid ===== */
-.categories {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  padding-bottom: 20px;
-}
-.cat-card {
-  position: relative;
-  border-radius: var(--radius);
-  padding: 24px 16px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-.cat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-}
-.cat-card:active {
-  transform: scale(0.97);
-}
-.cat-card .emoji {
-  font-size: 2.8em;
-  display: block;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-}
-.cat-card .name {
-  font-weight: 700;
-  font-size: 0.95em;
-  line-height: 1.3;
-}
-.cat-card .count {
-  font-size: 0.75em;
-  color: rgba(255,255,255,0.5);
-  margin-top: 4px;
-}
-.cat-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.03) 100%);
-  pointer-events: none;
-}
-
-/* Category colors */
-.cat-kz { background: linear-gradient(135deg, #0c4a6e, #155e75); }
-.cat-ru { background: linear-gradient(135deg, #7f1d1d, #991b1b); }
-.cat-world { background: linear-gradient(135deg, #3730a3, #4338ca); }
-.cat-dino { background: linear-gradient(135deg, #365314, #4d7c0f); }
-.cat-wow { background: linear-gradient(135deg, #9333ea, #c026d3); }
-
-/* Full-width last card if odd number */
-.categories .cat-card:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
-}
-
-/* ===== Quiz screen ===== */
-.quiz-screen {
-  display: none;
-}
-.quiz-screen.active {
-  display: block;
-}
-.home-screen.hidden {
-  display: none;
-}
-
-/* Back button */
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text);
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-size: 0.9em;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-bottom: 20px;
-}
-.back-btn:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-/* Category title in quiz */
-.quiz-title {
-  text-align: center;
-  margin-bottom: 8px;
-}
-.quiz-title .emoji { font-size: 2em; }
-.quiz-title h2 {
-  font-size: 1.4em;
-  font-weight: 700;
-  margin-top: 4px;
-}
+.quiz-cat-title .ic{font-size:2.4em;margin-bottom:4px}
+.quiz-cat-title h2{font-size:1.3em;font-weight:800}
 
 /* Progress */
-.progress-bar {
-  background: rgba(255,255,255,0.08);
-  border-radius: 10px;
-  height: 6px;
-  margin: 16px 0 24px;
-  overflow: hidden;
+.prog{
+  position:relative;height:6px;border-radius:6px;
+  background:rgba(255,255,255,.06);margin-bottom:28px;
+  overflow:hidden;
 }
-.progress-fill {
-  height: 100%;
-  border-radius: 10px;
-  transition: width 0.4s ease;
-  background: linear-gradient(90deg, #818cf8, #e879f9);
+.prog-fill{
+  height:100%;border-radius:6px;
+  background:linear-gradient(90deg,#818cf8,#c084fc,#f472b6);
+  background-size:200% 100%;
+  animation:progShimmer 3s linear infinite;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
 }
-.progress-text {
-  text-align: center;
-  font-size: 0.8em;
-  color: var(--text-dim);
-  margin-bottom: 20px;
+@keyframes progShimmer{0%{background-position:200% 0}100%{background-position:0% 0}}
+
+/* ===== THE CARD ===== */
+.card-wrap{
+  perspective:1400px;
+  height:420px;
+  margin-bottom:24px;
+  position:relative;
+}
+.card{
+  width:100%;height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.25,.46,.45,.94);
+  cursor:pointer;
+  -webkit-user-select:none;user-select:none;
+}
+.card.flipped{transform:rotateY(180deg)}
+.card.swipe-left{
+  transform:translateX(-120%) rotate(-15deg);
+  opacity:0;transition:all .4s ease;
+}
+.card.swipe-right{
+  transform:translateX(120%) rotate(15deg);
+  opacity:0;transition:all .4s ease;
+}
+.face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  border-radius:var(--r);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:36px 28px;
+  overflow:hidden;
+}
+/* FRONT face */
+.face-front{
+  background:var(--surface);
+  border:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.face-front .big-ic{
+  font-size:5em;
+  margin-bottom:24px;
+  animation:float 4s ease-in-out infinite;
+  filter:drop-shadow(0 10px 30px rgba(0,0,0,.3));
+}
+@keyframes float{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  25%{transform:translateY(-8px) rotate(2deg)}
+  75%{transform:translateY(4px) rotate(-1deg)}
+}
+.face-front .hint{
+  font-size:1.15em;font-weight:600;
+  color:rgba(255,255,255,.6);margin-bottom:8px;
+}
+.face-front .hint-sub{
+  font-size:.8em;color:rgba(255,255,255,.25);
+}
+/* tap ring animation */
+.face-front .tap-ring{
+  position:absolute;
+  width:100px;height:100px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.1);
+  animation:ringPulse 2.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes ringPulse{
+  0%{transform:scale(.8);opacity:.5}
+  50%{transform:scale(1.3);opacity:0}
+  100%{transform:scale(.8);opacity:0}
+}
+/* shimmer sweep */
+.face-front::after{
+  content:'';position:absolute;
+  top:-100%;left:-100%;width:300%;height:300%;
+  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.03) 50%,transparent 60%);
+  animation:shimmer 4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes shimmer{
+  0%{transform:translate(-30%,-30%)}
+  100%{transform:translate(30%,30%)}
 }
 
-/* ===== Flashcard ===== */
-.card-container {
-  perspective: 1200px;
-  height: 380px;
-  margin-bottom: 24px;
+/* BACK face */
+.face-back{
+  transform:rotateY(180deg);
+  background:linear-gradient(160deg,rgba(30,27,75,.95),rgba(20,20,40,.98));
+  border:1px solid rgba(129,140,248,.2);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  text-align:left;
+  justify-content:flex-start;
+  padding-top:40px;
 }
-.flashcard {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+.face-back .fact-head{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:20px;width:100%;
 }
-.flashcard.flipped {
-  transform: rotateY(180deg);
+.face-back .fact-ic{font-size:2em}
+.face-back .fact-label{
+  font-size:.7em;text-transform:uppercase;letter-spacing:2px;
+  color:var(--accent);font-weight:700;
 }
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: var(--radius);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
-  border: 1px solid rgba(255,255,255,0.08);
-  overflow: hidden;
+.face-back .fact-body{
+  font-size:1.05em;line-height:1.75;
+  color:rgba(255,255,255,.88);
+  flex:1;overflow-y:auto;width:100%;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.1) transparent;
 }
-.card-front {
-  background: var(--card-bg);
-}
-.card-front .card-emoji {
-  font-size: 4em;
-  margin-bottom: 20px;
-  animation: pulse 3s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-}
-.card-front .tap-hint {
-  font-size: 1.1em;
-  font-weight: 600;
-  color: rgba(255,255,255,0.7);
-}
-.card-front .tap-sub {
-  font-size: 0.8em;
-  color: rgba(255,255,255,0.3);
-  margin-top: 8px;
-}
-.card-back {
-  background: var(--card-bg);
-  transform: rotateY(180deg);
-  text-align: center;
-}
-.card-back .fact-emoji {
-  font-size: 2.5em;
-  margin-bottom: 16px;
-}
-.card-back .fact-text {
-  font-size: 1.05em;
-  line-height: 1.6;
-  color: var(--text);
-  max-height: 240px;
-  overflow-y: auto;
-}
-.card-back .fact-text::-webkit-scrollbar {
-  width: 4px;
-}
-.card-back .fact-text::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 4px;
+.face-back .fact-body::-webkit-scrollbar{width:3px}
+.face-back .fact-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+/* decorative accent line */
+.face-back::before{
+  content:'';position:absolute;top:0;left:28px;right:28px;height:3px;
+  border-radius:0 0 3px 3px;
+  background:linear-gradient(90deg,#818cf8,#c084fc,#f472b6);
+  pointer-events:none;
 }
 
-/* Shimmer on card */
-.card-face::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.03) 0%, transparent 60%);
-  pointer-events: none;
+/* ===== NAV BUTTONS ===== */
+.nav{display:flex;gap:12px}
+.nav-btn{
+  flex:1;padding:16px;border-radius:16px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text);font-size:.95em;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
 }
+.nav-btn:hover{background:var(--surface2);transform:translateY(-2px)}
+.nav-btn:active{transform:scale(.97);transition:transform .1s}
+.nav-btn.primary{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  border-color:transparent;
+  box-shadow:0 4px 20px rgba(99,102,241,.3);
+}
+.nav-btn.primary:hover{box-shadow:0 6px 30px rgba(99,102,241,.4)}
+.nav-btn svg{width:18px;height:18px}
 
-/* ===== Navigation buttons ===== */
-.nav-btns {
-  display: flex;
-  gap: 12px;
+/* ===== COMPLETION ===== */
+.done{text-align:center;padding:80px 20px}
+.done-ic{font-size:5em;margin-bottom:20px;animation:float 3s ease-in-out infinite}
+.done h2{font-size:1.8em;font-weight:800;margin-bottom:8px}
+.done p{color:var(--text2);font-size:1em;margin-bottom:10px}
+.done .score{
+  font-size:3em;font-weight:900;
+  background:linear-gradient(135deg,#818cf8,#f472b6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin:16px 0 30px;
 }
-.nav-btn {
-  flex: 1;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.04);
-  color: var(--text);
-  font-size: 1em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.nav-btn:hover {
-  background: rgba(255,255,255,0.08);
-}
-.nav-btn:active {
-  transform: scale(0.97);
-}
-.nav-btn.primary {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-color: transparent;
-}
-.nav-btn.primary:hover {
-  opacity: 0.9;
-}
+.done .nav-btn{max-width:300px;margin:0 auto}
 
-/* ===== Shuffle animation ===== */
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(60px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-.card-container.animate-in {
-  animation: slideIn 0.4s ease;
-}
+/* ===== CONFETTI CANVAS ===== */
+#confettiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99;pointer-events:none}
 
-/* ===== Responsive ===== */
-@media (max-width: 380px) {
-  .categories { grid-template-columns: 1fr; }
-  .card-container { height: 340px; }
-  .card-front .card-emoji { font-size: 3em; }
+/* ===== STREAK TOAST ===== */
+.streak-toast{
+  position:fixed;top:30px;left:50%;
+  transform:translateX(-50%) translateY(-100px);
+  background:rgba(15,15,30,.9);
+  border:1px solid rgba(129,140,248,.3);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  color:#fff;padding:12px 24px;border-radius:16px;
+  font-size:.9em;font-weight:600;z-index:50;
+  transition:transform .4s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;gap:8px;
 }
+.streak-toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ===== Toast ===== */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: rgba(99,102,241,0.95);
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 14px;
-  font-size: 0.9em;
-  font-weight: 600;
-  z-index: 100;
-  transition: transform 0.4s ease;
-  backdrop-filter: blur(10px);
+/* ===== RESPONSIVE ===== */
+@media(max-width:420px){
+  .cats{grid-template-columns:1fr;gap:12px}
+  .hero{padding:40px 0 24px}
+  .logo{font-size:2.4em}
+  .card-wrap{height:370px}
+  .face{padding:28px 20px}
+  .face-front .big-ic{font-size:4em}
+  .stats-row{gap:24px}
 }
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ===== Completion screen ===== */
-.completion {
-  text-align: center;
-  padding: 60px 20px;
-}
-.completion .big-emoji {
-  font-size: 4em;
-  margin-bottom: 16px;
-}
-.completion h2 {
-  font-size: 1.6em;
-  margin-bottom: 8px;
-}
-.completion p {
-  color: var(--text-dim);
-  margin-bottom: 30px;
-}
-.completion .nav-btn {
-  max-width: 280px;
-  margin: 0 auto;
+@media(min-width:768px){
+  .card-wrap{height:460px}
 }
 </style>
 </head>
 <body>
 
-<div class="bg-glow"></div>
+<canvas id="bgCanvas"></canvas>
+<canvas id="confettiCanvas"></canvas>
 
-<div class="container">
-  <!-- HOME SCREEN -->
-  <div class="home-screen" id="homeScreen">
-    <div class="header">
-      <h1>FlashFacts</h1>
-      <p>Нажми на карту — узнай невероятное</p>
+<!-- STREAK TOAST -->
+<div class="streak-toast" id="streakToast"></div>
+
+<!-- ===== HOME SCREEN ===== -->
+<div class="screen active" id="homeScreen">
+  <div class="hero">
+    <div class="logo">FlashFacts</div>
+    <div class="tagline">Tap. Flip. Get your mind blown.</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-val" id="sViewed">0</div>
+      <div class="stat-lbl">Learned</div>
     </div>
-
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-num" id="totalViewed">0</div>
-        <div class="stat-label">Просмотрено</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" id="totalFacts">0</div>
-        <div class="stat-label">Всего фактов</div>
-      </div>
+    <div class="stat-item">
+      <div class="stat-val" id="sTotal">0</div>
+      <div class="stat-lbl">Total</div>
     </div>
+    <div class="stat-item">
+      <div class="stat-val" id="sStreak">0</div>
+      <div class="stat-lbl">Streak</div>
+    </div>
+  </div>
+  <div class="cats" id="catsGrid"></div>
+</div>
 
-    <div class="categories" id="categoriesGrid"></div>
+<!-- ===== QUIZ SCREEN ===== -->
+<div class="screen" id="quizScreen">
+  <div class="quiz-top">
+    <button class="btn-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Back
+    </button>
+    <div class="quiz-counter" id="qCounter"></div>
   </div>
 
-  <!-- QUIZ SCREEN -->
-  <div class="quiz-screen" id="quizScreen">
-    <button class="back-btn" onclick="goHome()">
-      <span>&larr;</span> Назад
-    </button>
+  <div class="quiz-cat-title" id="qTitle"></div>
 
-    <div class="quiz-title" id="quizTitle"></div>
+  <div class="prog">
+    <div class="prog-fill" id="progFill"></div>
+  </div>
 
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <div class="progress-text" id="progressText"></div>
-
-    <div class="card-container" id="cardContainer">
-      <div class="flashcard" id="flashcard" onclick="flipCard()">
-        <div class="card-face card-front" id="cardFront">
-          <div class="card-emoji" id="frontEmoji"></div>
-          <div class="tap-hint">Нажми чтобы узнать</div>
-          <div class="tap-sub">факт #<span id="factNum">1</span></div>
+  <div class="card-wrap" id="cardWrap">
+    <div class="card" id="card" onclick="flip()">
+      <div class="face face-front" id="fFront">
+        <div class="tap-ring"></div>
+        <div class="big-ic" id="fIc"></div>
+        <div class="hint">Tap to reveal</div>
+        <div class="hint-sub">Fact #<span id="fNum">1</span></div>
+      </div>
+      <div class="face face-back" id="fBack">
+        <div class="fact-head">
+          <div class="fact-ic" id="bIc"></div>
+          <div class="fact-label">DID YOU KNOW?</div>
         </div>
-        <div class="card-face card-back" id="cardBack">
-          <div class="fact-emoji" id="backEmoji"></div>
-          <div class="fact-text" id="factText"></div>
-        </div>
+        <div class="fact-body" id="bText"></div>
       </div>
     </div>
+  </div>
 
-    <div id="navArea">
-      <div class="nav-btns">
-        <button class="nav-btn" onclick="prevFact()">
-          <span>&larr;</span> Назад
-        </button>
-        <button class="nav-btn primary" onclick="nextFact()">
-          Далее <span>&rarr;</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Completion -->
-    <div class="completion" id="completionScreen" style="display:none;">
-      <div class="big-emoji">&#127881;</div>
-      <h2>Все факты изучены!</h2>
-      <p>Ты просмотрел все факты в этой категории</p>
-      <button class="nav-btn primary" onclick="goHome()" style="max-width:280px;margin:0 auto;">
-        &#8592; К категориям
+  <div id="navArea">
+    <div class="nav">
+      <button class="nav-btn" onclick="prev()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Prev
+      </button>
+      <button class="nav-btn" onclick="shuffle()" style="flex:.6">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      </button>
+      <button class="nav-btn primary" onclick="next()">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
   </div>
+
+  <div class="done" id="doneArea" style="display:none">
+    <div class="done-ic">&#127881;</div>
+    <h2>Category Complete!</h2>
+    <p>You've explored all facts here</p>
+    <div class="score" id="doneScore"></div>
+    <button class="nav-btn primary" onclick="goHome()" style="max-width:300px;margin:0 auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      All Categories
+    </button>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-// ========== DATA ==========
-const categories = [
-  {
-    id: 'kz',
-    name: 'История Казахстана',
-    emoji: '&#127470;&#127487;',
-    cssClass: 'cat-kz',
-    cardEmojis: ['&#127470;&#127487;', '&#128052;', '&#9876;&#65039;', '&#127745;', '&#128081;', '&#128214;', '&#127960;', '&#128640;'],
-    facts: [
-      'Золотой человек (Алтын Адам) — сакский воин найденный в кургане Иссык в 1969 году. Его доспехи состоят из более чем 4000 золотых пластин. Ему примерно 2500 лет.',
-      'Казахстан — 9-я по площади страна в мире (2.7 млн км²). Это больше всей Западной Европы вместе взятой.',
-      'Космодром Байконур — первый и крупнейший в мире космодром. Отсюда Юрий Гагарин полетел в космос в 1961 году. Казахстан сдаёт его России в аренду за $115 млн в год.',
-      'Казахи изобрели кумыс — напиток из кобыльего молока. Его пили ещё воины Чингисхана. Он содержит витамины группы B и естественный антибиотик.',
-      'Аральское море когда-то было 4-м по величине озером в мире. К 2014 году оно почти полностью высохло из-за советских ирригационных проектов.',
-      'Тюркский каганат (552-603 гг) — одна из крупнейших империй в истории, простиравшаяся от Кореи до Чёрного моря. Его центр был на территории современного Казахстана.',
-      'Яблоки родом из Казахстана! Город Алматы означает "Отец яблок". Дикие яблони Тянь-Шаня — предки всех культурных сортов яблок в мире.',
-      'Казахстанское ханство было основано в 1465 году ханами Жанибеком и Кереем, которые увели свои племена от хана Абулхаира.',
-      'Голодомор в Казахстане (1931-1933) — от голода погибло около 1.5 миллиона казахов, что составляло 38% всего казахского населения.',
-      'Семипалатинский ядерный полигон — здесь СССР провёл 456 ядерных испытаний с 1949 по 1989 год. Казахстан добровольно отказался от 4-го в мире ядерного арсенала в 1993 году.',
-      'Тамгалы-Тас — урочище с более чем 5000 наскальными рисунками эпохи бронзы (XIV-XIII вв. до н.э.). Это объект Всемирного наследия ЮНЕСКО.',
-      'Великий Шёлковый путь проходил через Казахстан. Города Отрар, Тараз и Туркестан были крупнейшими торговыми центрами между Китаем и Европой.',
-      'Мавзолей Ходжи Ахмеда Ясави в Туркестане был построен по приказу Тамерлана в 1389 году. Это один из наиболее сохранившихся памятников эпохи Тимуридов.',
-      'Домбра — казахский музыкальный инструмент с 2 струнами. Кюй "Аксак кулан" считается одним из древнейших музыкальных произведений, ему более 700 лет.',
-      'Касым-хан (1511-1521) создал первый свод законов казахов "Қасым ханның қасқа жолы" (Светлый путь Касым-хана), объединив казахские племена.'
-    ]
-  },
-  {
-    id: 'ru',
-    name: 'История России',
-    emoji: '&#127479;&#127482;',
-    cssClass: 'cat-ru',
-    cardEmojis: ['&#127479;&#127482;', '&#128081;', '&#9876;&#65039;', '&#127960;', '&#128059;', '&#128640;', '&#10052;&#65039;', '&#127387;'],
-    facts: [
-      'Россия настолько огромна, что в ней 11 часовых поясов. Когда в Калининграде утро, во Владивостоке уже вечер.',
-      'Пётр I ввёл налог на бороды в 1698 году. Кто хотел носить бороду — платил и носил специальный "бородовой знак". Цена зависела от сословия.',
-      'Эрмитаж в Санкт-Петербурге — один из крупнейших музеев мира с коллекцией более 3 миллионов экспонатов. Чтобы посмотреть каждый экспонат по 1 минуте, понадобится 11 лет.',
-      'Московский метрополитен — не просто транспорт, а подземный дворец. Станция "Комсомольская" напоминает бальный зал с мозаиками и люстрами. Построен в 1935 году.',
-      'Блокада Ленинграда длилась 872 дня (1941-1944). Это самая длительная осада города в современной истории. Погибло более 1 миллиона мирных жителей.',
-      'Транссибирская магистраль — самая длинная железная дорога в мире: 9288 км от Москвы до Владивостока. Поездка занимает 7 дней.',
-      'Распутин — "святой чёрт" при дворе Николая II. Его пытались убить ядом, застрелить и утопить. По легенде, яд на него не подействовал, пули не убили, и лишь ледяная вода реки довершила дело.',
-      'Озеро Байкал содержит 20% мировых запасов пресной воды. Ему 25 миллионов лет — это самое древнее озеро на Земле. Его глубина — 1642 метра.',
-      'Россия продала Аляску США в 1867 году за $7.2 миллиона (около 2 центов за акр). Сейчас только нефть Аляски стоит триллионы долларов.',
-      'Во время Второй мировой войны СССР потерял около 27 миллионов человек — больше, чем любая другая страна. Каждый 7-й житель Советского Союза погиб.',
-      'Иван Грозный после убийства своего сына в приступе гнева был настолько потрясён, что провёл остаток жизни в покаянии и назвал себя "самым грешным из всех грешников".',
-      'Первый искусственный спутник Земли (Спутник-1) был запущен СССР 4 октября 1957 года. Он весил всего 83.6 кг и передавал радиосигнал "бип-бип" 21 день.',
-      'Царь-колокол в Московском Кремле весит 200 тонн — самый большой колокол в мире. Но он никогда не звонил: треснул при пожаре в 1737 году ещё до установки.',
-      'Во время войны 1812 года Наполеон вошёл в Москву, но обнаружил пустой горящий город. Русские сами подожгли столицу. Наполеон назвал это "войной скифов".',
-      'Юрий Гагарин, первый человек в космосе (1961), перед полётом сказал легендарное "Поехали!". Весь полёт вокруг Земли занял всего 108 минут.'
-    ]
-  },
-  {
-    id: 'world',
-    name: 'Всемирная история',
-    emoji: '&#127758;',
-    cssClass: 'cat-world',
-    cardEmojis: ['&#127758;', '&#127963;', '&#9876;&#65039;', '&#128220;', '&#127942;', '&#128161;', '&#127760;', '&#9973;&#65039;'],
-    facts: [
-      'Клеопатра жила ближе по времени к высадке на Луну, чем к строительству пирамид. Пирамиды построены ~2560 г. до н.э., Клеопатра правила ~50 г. до н.э., а высадка на Луну — 1969 г.',
-      'Оксфордский университет старше империи ацтеков. Оксфорд основан в 1096 году, а ацтекская империя — примерно в 1428 году.',
-      'В Древнем Риме были торговые центры. Рынок Траяна (110 г. н.э.) — многоэтажный комплекс с более чем 150 магазинами и офисами.',
-      'Чингисхан убил так много людей (~40 млн), что на время снизил уровень CO₂ в атмосфере. Леса выросли на опустевших землях и поглотили углерод.',
-      'Последняя казнь на гильотине во Франции произошла в 1977 году — в том же году вышел первый фильм "Звёздные войны".',
-      'Великая Китайская стена не видна из космоса невооружённым глазом — это миф. Зато из космоса видны автомагистрали и города.',
-      'В средневековой Европе помидоры считались ядовитыми около 200 лет. Причина: кислота помидоров растворяла свинец из оловянных тарелок, вызывая отравление.',
-      'Древние египтяне использовали антибиотики за 2000 лет до их открытия. Они прикладывали заплесневелый хлеб к ранам — та же плесень, из которой делают пенициллин.',
-      'Пабло Эскобар сжигал $2 миллиона наличными за ночь, чтобы согреть свою семью, когда они скрывались в горах.',
-      'Самая короткая война в истории — между Британией и Занзибаром в 1896 году. Она длилась 38 минут.',
-      'Ниндзя не носили чёрное. Они маскировались под обычных людей — торговцев, монахов, крестьян. Чёрный костюм — изобретение японского театра.',
-      'В Древнем Египте кошки считались священными. За убийство кошки полагалась смертная казнь. При гибели кошки семья сбривала брови в знак траура.',
-      'Александрийская библиотека содержала около 700 000 свитков — все знания древнего мира. Её уничтожение считается одной из величайших потерь человечества.',
-      'Стены Константинополя простояли 1000 лет, выдержав десятки осад. Город пал только в 1453 году, когда османы применили гигантские пушки.',
-      'Наполеон был не низким — его рост был 170 см, что выше среднего для того времени. Миф возник из-за разницы между французскими и английскими дюймами.'
-    ]
-  },
-  {
-    id: 'dino',
-    name: 'Динозавры',
-    emoji: '&#129430;',
-    cssClass: 'cat-dino',
-    cardEmojis: ['&#129430;', '&#129422;', '&#127796;', '&#129408;', '&#128296;', '&#9728;&#65039;', '&#127756;', '&#129440;'],
-    facts: [
-      'Тираннозавр Рекс имел силу укуса около 6 тонн — это сильнее, чем любое наземное животное в истории. Он мог раздавить автомобиль челюстями.',
-      'Мозг стегозавра был размером с грецкий орех, хотя сам динозавр весил до 5 тонн. Это одно из самых низких соотношений мозга к телу среди всех динозавров.',
-      'Динозавры жили на Земле 165 миллионов лет. Люди — всего ~300 000 лет. Если историю Земли сжать в 24 часа, динозавры существовали 50 минут, а люди — 1 секунду.',
-      'Велоцирапторы были размером с индейку, а не как в "Парке Юрского периода". Рост ~50 см, вес ~15 кг. Но они были покрыты перьями и охотились стаями.',
-      'Метеорит, убивший динозавров (Чиксулуб), был ~10 км в диаметре. При ударе энергия взрыва была в 10 миллиардов раз мощнее бомбы, сброшенной на Хиросиму.',
-      'Аргентинозавр — самое тяжёлое наземное животное в истории: до 100 тонн. Это вес 14 слонов. Длина — 40 метров, как 4 школьных автобуса.',
-      'Птицы — прямые потомки динозавров. Технически, курица — это живой динозавр. Учёные даже вырастили куриный эмбрион с мордой динозавра.',
-      'Некоторые динозавры жили в Арктике. Троодон обитал на Аляске, где зимой было -10°C и полгода длилась полярная ночь.',
-      'Спинозавр — единственный известный полуводный динозавр. Он был длиннее Т-Рекса (до 18 м) и охотился на рыбу как гигантский крокодил.',
-      'Пахицефалозавр использовал свой куполообразный череп (толщиной 25 см!) для таранных ударов. Как динозавр-баран, только весом в полтонны.',
-      'Динозавры были на всех континентах, включая Антарктиду. В то время Антарктида была покрыта лесами и имела тёплый климат.',
-      'Самый маленький динозавр — Microraptor, размером с ворону. Он имел 4 крыла и мог планировать между деревьями.',
-      'Тираннозавр не мог бегать — только быстро ходить (до 20 км/ч). При беге его ноги бы сломались под собственным весом в 9 тонн.',
-      'Некоторые зауроподы глотали камни (гастролиты) для перемалывания пищи в желудке — как современные птицы глотают гравий.',
-      'Анкилозавр был живым танком: тело покрыто костяной бронёй, а на хвосте — булава весом 30 кг, способная сломать ногу Тираннозавру.',
-      'Дейнохейр ("ужасные руки") — имел когти длиной 70 см на каждой руке. Полный скелет нашли только в 2014 году, через 49 лет после открытия.'
-    ]
-  },
-  {
-    id: 'wow',
-    name: 'Невероятные факты',
-    emoji: '&#129327;',
-    cssClass: 'cat-wow',
-    cardEmojis: ['&#129327;', '&#128171;', '&#128300;', '&#127752;', '&#128165;', '&#128142;', '&#128126;', '&#129504;'],
-    facts: [
-      'Осьминог имеет 3 сердца, голубую кровь и 9 мозгов (мини-мозг в каждом из 8 щупалец). Если потеряет щупальце — вырастит новое.',
-      'На Земле больше деревьев, чем звёзд в Млечном Пути. Деревьев ~3 триллиона, звёзд в нашей галактике ~200-400 миллиардов.',
-      'Мёд не портится НИКОГДА. Учёные нашли 3000-летний мёд в египетских гробницах — он был полностью съедобен.',
-      'В твоём теле больше бактерий, чем собственных клеток. Соотношение примерно 1.3 к 1. Ты буквально больше бактерия, чем человек.',
-      'Если бы Солнце было размером с входную дверь, Земля была бы размером с монету, а Юпитер — с баскетбольный мяч.',
-      'Бананы радиоактивны. Они содержат калий-40. Но чтобы получить опасную дозу радиации, нужно съесть 10 миллионов бананов за раз.',
-      'Свет от Солнца летит до Земли 8 минут 20 секунд. Когда ты смотришь на Солнце, ты видишь его таким, каким оно было 8 минут назад.',
-      'ДНК человека и банана совпадают на 60%. Мы генетически ближе к грибам, чем к растениям.',
-      'Если убрать всё пустое пространство из атомов, всё человечество (8 миллиардов людей) поместилось бы в объём одного яблока.',
-      'Каждые 7-10 лет все атомы в твоём теле заменяются новыми. Физически ты — не тот же человек, что 10 лет назад.',
-      'Тихоокеанский мусорный остров в 3 раза больше Франции. Он содержит ~80 000 тонн пластика и продолжает расти.',
-      'Самая громкая зарегистрированная вещь — извержение Кракатау в 1883 году. Звук был слышен за 4800 км. Ударная волна обогнула Землю 4 раза.',
-      'Нейтронная звезда настолько плотная, что чайная ложка её вещества весит ~6 миллиардов тонн. Это как поместить всё население Земли в кубик сахара.',
-      'У креветки-богомола 16 типов цветовых рецепторов (у человека — 3). Она видит ультрафиолет, инфракрасное излучение и круговую поляризацию света.',
-      'Вселенная пахнет. По словам астронавтов, открытый космос пахнет жареным стейком, порохом и малиной. Это из-за молекулы этилформиата.',
-      'Молния в 5 раз горячее поверхности Солнца. Температура молнии ~30 000°C, а поверхности Солнца ~5500°C.',
-      'Коровы убивают больше людей в год, чем акулы. Коровы — ~20 смертей в год, акулы — ~5. Даже торговые автоматы опаснее акул.',
-      'В одном стакане воды больше атомов, чем стаканов воды во всех океанах Земли. Примерно 10^25 молекул в стакане.',
-      'Клеопатра могла бы теоретически узнать о пицце — она жила всего за 30 лет до Римской империи, которая уже делала лепёшки с начинкой.',
-      'Тарантулы могут жить без еды до 2 лет. А тараканы выживут неделю без головы — у них открытая кровеносная система и они дышат через тело.'
-    ]
-  }
+// ============ FACTS DATA ============
+const CATS=[
+{id:'kz',name:'Kazakhstan',emoji:'\u{1F1F0}\u{1F1FF}',css:'cat-kz',
+icons:['\u{1F1F0}\u{1F1FF}','\u{1F434}','\u2694\uFE0F','\u{1F3D4}','\u{1F451}','\u{1F4D6}','\u{1F3F0}','\u{1F680}'],
+facts:[
+'Golden Man (Altyn Adam) \u2014 a Saka warrior found in the Issyk burial mound in 1969. His armor consists of over 4,000 gold plates. He is approximately 2,500 years old. \u{1F451}',
+'Kazakhstan is the 9th largest country in the world (2.7 million km\u00B2). It\u2019s bigger than all of Western Europe combined. \u{1F30D}',
+'Baikonur Cosmodrome is the world\u2019s first and largest spaceport. Yuri Gagarin launched into space from here in 1961. Kazakhstan leases it to Russia for $115 million/year. \u{1F680}',
+'Kazakhs invented kumis \u2014 a drink made from mare\u2019s milk. Genghis Khan\u2019s warriors drank it. It contains B vitamins and a natural antibiotic. \u{1F943}',
+'The Aral Sea was once the 4th largest lake in the world. By 2014 it had almost completely dried up due to Soviet irrigation projects. \u{1F4A7}',
+'The Turkic Khaganate (552-603 AD) was one of the largest empires in history, stretching from Korea to the Black Sea. Its center was in modern Kazakhstan. \u2694\uFE0F',
+'Apples originated in Kazakhstan! The city of Almaty means "Father of Apples." Wild apple trees of the Tien Shan mountains are ancestors of all cultivated apple varieties in the world. \u{1F34E}',
+'The Kazakh Khanate was founded in 1465 by Khans Zhanibek and Kerey, who led their tribes away from Khan Abulkhair. \u{1F3F0}',
+'The famine in Kazakhstan (1931-1933) killed about 1.5 million Kazakhs \u2014 38% of the entire Kazakh population. \u{1F56F}\uFE0F',
+'The Semipalatinsk nuclear test site \u2014 the USSR conducted 456 nuclear tests here from 1949 to 1989. Kazakhstan voluntarily gave up the world\u2019s 4th largest nuclear arsenal in 1993. \u2622\uFE0F',
+'Tamgaly \u2014 a site with over 5,000 rock carvings from the Bronze Age (14th-13th centuries BC). It\u2019s a UNESCO World Heritage Site. \u{1F3A8}',
+'The Great Silk Road passed through Kazakhstan. The cities of Otrar, Taraz and Turkestan were major trade centers between China and Europe. \u{1F42B}',
+'The Mausoleum of Khoja Ahmed Yasawi in Turkestan was built by order of Tamerlane in 1389. It\u2019s one of the best-preserved Timurid monuments. \u{1F54C}',
+'Dombra \u2014 a Kazakh musical instrument with 2 strings. The k\u00FCy "Aksak Kulan" is considered one of the oldest musical compositions, over 700 years old. \u{1F3B6}',
+'Kasym Khan (1511-1521) created the first code of Kazakh laws "Qasym khanny\u0148 qasqa zholy" (The Bright Path of Kasym Khan), uniting the Kazakh tribes. \u{1F4DC}'
+]},
+{id:'ru',name:'Russia',emoji:'\u{1F1F7}\u{1F1FA}',css:'cat-ru',
+icons:['\u{1F1F7}\u{1F1FA}','\u{1F451}','\u2694\uFE0F','\u{1F3F0}','\u{1F43B}','\u{1F680}','\u2744\uFE0F','\u{1F3BB}'],
+facts:[
+'Russia is so enormous it spans 11 time zones. When it\u2019s morning in Kaliningrad, it\u2019s already evening in Vladivostok. \u{1F570}\uFE0F',
+'Peter I introduced a beard tax in 1698. Anyone wanting to keep their beard had to pay and wear a special "beard token." Price depended on social class. \u{1F9D4}',
+'The Hermitage in Saint Petersburg has a collection of over 3 million items. To view each exhibit for just 1 minute, you\u2019d need 11 years. \u{1F3DB}\uFE0F',
+'Moscow Metro is an underground palace. The Komsomolskaya station resembles a ballroom with mosaics and chandeliers. Built in 1935. \u{1F687}',
+'The Siege of Leningrad lasted 872 days (1941-1944). It\u2019s the longest siege of a city in modern history. Over 1 million civilians perished. \u{1F56F}\uFE0F',
+'The Trans-Siberian Railway is the world\u2019s longest railroad: 9,288 km from Moscow to Vladivostok. The journey takes 7 days. \u{1F682}',
+'Rasputin \u2014 the "holy devil" at the court of Nicholas II. They tried to kill him with poison, bullets, and drowning. Legend says the poison didn\u2019t work, bullets didn\u2019t kill him, and only the icy river water finished the job. \u{1F480}',
+'Lake Baikal holds 20% of the world\u2019s fresh water. It\u2019s 25 million years old \u2014 the most ancient lake on Earth. Its depth reaches 1,642 meters. \u{1F30A}',
+'Russia sold Alaska to the USA in 1867 for $7.2 million (about 2 cents per acre). Today, Alaska\u2019s oil alone is worth trillions of dollars. \u{1F4B0}',
+'During WWII, the USSR lost about 27 million people \u2014 more than any other country. Every 7th citizen of the Soviet Union perished. \u{1F3F4}',
+'Ivan the Terrible, after killing his son in a fit of rage, was so shocked he spent the rest of his life in repentance, calling himself "the most sinful of all sinners." \u{1F451}',
+'The first artificial satellite (Sputnik-1) was launched by the USSR on October 4, 1957. It weighed just 83.6 kg and transmitted a "beep-beep" radio signal for 21 days. \u{1F6F0}\uFE0F',
+'The Tsar Bell in the Moscow Kremlin weighs 200 tons \u2014 the largest bell in the world. But it never rang: it cracked during a fire in 1737 before installation. \u{1F514}',
+'During the 1812 war, Napoleon entered Moscow only to find an empty, burning city. The Russians set fire to their own capital. Napoleon called it "a war of Scythians." \u{1F525}',
+'Yuri Gagarin, the first human in space (1961), said the legendary "Poyekhali!" (Let\u2019s go!) before launch. The entire orbit around Earth took just 108 minutes. \u{1F468}\u200D\u{1F680}'
+]},
+{id:'world',name:'World History',emoji:'\u{1F30E}',css:'cat-world',
+icons:['\u{1F30E}','\u{1F3DB}\uFE0F','\u2694\uFE0F','\u{1F4DC}','\u{1F3C6}','\u{1F4A1}','\u{1F310}','\u2693\uFE0F'],
+facts:[
+'Cleopatra lived closer in time to the Moon landing than to the building of the pyramids. Pyramids: ~2560 BC. Cleopatra: ~50 BC. Moon landing: 1969 AD. \u{1F3DB}\uFE0F',
+'Oxford University is older than the Aztec Empire. Oxford was founded in 1096, while the Aztec Empire began around 1428. \u{1F393}',
+'Ancient Rome had shopping malls. Trajan\u2019s Market (110 AD) was a multi-story complex with over 150 shops and offices. \u{1F6CD}\uFE0F',
+'Genghis Khan killed so many people (~40 million) that he temporarily lowered CO\u2082 levels in the atmosphere. Forests grew on empty lands and absorbed the carbon. \u{1F332}',
+'The last guillotine execution in France happened in 1977 \u2014 the same year the first Star Wars movie came out. \u{1F52A}',
+'The Great Wall of China is NOT visible from space with the naked eye \u2014 that\u2019s a myth. But highways and cities ARE visible from space. \u{1F6F8}',
+'In medieval Europe, tomatoes were considered poisonous for about 200 years. Reason: tomato acid dissolved lead from pewter plates, causing poisoning. \u{1F345}',
+'Ancient Egyptians used antibiotics 2,000 years before their discovery. They applied moldy bread to wounds \u2014 the same mold used to make penicillin. \u{1F9EA}',
+'Pablo Escobar burned $2 million in cash per night to keep his family warm when they were hiding in the mountains. \u{1F525}',
+'The shortest war in history was between Britain and Zanzibar in 1896. It lasted 38 minutes. \u23F1\uFE0F',
+'Ninjas didn\u2019t wear black. They disguised themselves as ordinary people \u2014 merchants, monks, peasants. The black costume is a Japanese theater invention. \u{1F977}',
+'In Ancient Egypt, cats were sacred. Killing a cat was punishable by death. When a cat died, the family shaved off their eyebrows in mourning. \u{1F431}',
+'The Library of Alexandria held about 700,000 scrolls \u2014 all knowledge of the ancient world. Its destruction is considered one of humanity\u2019s greatest losses. \u{1F4DA}',
+'The walls of Constantinople stood for 1,000 years, withstanding dozens of sieges. The city fell only in 1453 when the Ottomans used giant cannons. \u{1F3F0}',
+'Napoleon wasn\u2019t short \u2014 he was 170 cm, above average for his time. The myth arose from the difference between French and English inches. \u{1F4CF}'
+]},
+{id:'dino',name:'Dinosaurs',emoji:'\u{1F996}',css:'cat-dino',
+icons:['\u{1F996}','\u{1F995}','\u{1F334}','\u{1F40A}','\u{1FA78}','\u2604\uFE0F','\u{1F30B}','\u{1F9B4}'],
+facts:[
+'T-Rex had a bite force of about 6 tons \u2014 stronger than any land animal in history. It could crush a car with its jaws. \u{1F996}',
+'A Stegosaurus\u2019s brain was the size of a walnut, despite the dino weighing up to 5 tons. One of the lowest brain-to-body ratios among all dinosaurs. \u{1F95C}',
+'Dinosaurs lived on Earth for 165 million years. Humans \u2014 only ~300,000 years. If Earth\u2019s history were compressed to 24 hours, dinosaurs existed for 50 minutes, humans for 1 second. \u23F0',
+'Velociraptors were turkey-sized, not like in Jurassic Park. ~50 cm tall, ~15 kg. But they were covered in feathers and hunted in packs. \u{1F983}',
+'The asteroid that killed the dinosaurs (Chicxulub) was ~10 km across. The impact energy was 10 billion times more powerful than the Hiroshima bomb. \u2604\uFE0F',
+'Argentinosaurus was the heaviest land animal ever: up to 100 tons. That\u2019s the weight of 14 elephants. Length \u2014 40 meters, like 4 school buses. \u{1F995}',
+'Birds are direct descendants of dinosaurs. Technically, a chicken IS a living dinosaur. Scientists even grew a chicken embryo with a dinosaur face. \u{1F414}',
+'Some dinosaurs lived in the Arctic. Troodon lived in Alaska where winter temperatures reached -10\u00B0C and polar night lasted half a year. \u2744\uFE0F',
+'Spinosaurus was the only known semi-aquatic dinosaur. It was longer than T-Rex (up to 18m) and hunted fish like a giant crocodile. \u{1F40A}',
+'Pachycephalosaurus used its dome-shaped skull (25 cm thick!) for ramming attacks. Like a dinosaur-ram, only weighing half a ton. \u{1F4A5}',
+'Dinosaurs were on ALL continents, including Antarctica. Back then, Antarctica was covered in forests and had a warm climate. \u{1F3D4}\uFE0F',
+'The smallest dinosaur \u2014 Microraptor, the size of a crow. It had 4 wings and could glide between trees. \u{1F426}',
+'T-Rex couldn\u2019t actually run \u2014 only speed-walk (up to 20 km/h). Running would have shattered its legs under its own 9-ton weight. \u{1F6B6}',
+'Some sauropods swallowed rocks (gastroliths) to grind food in their stomachs \u2014 just like modern birds swallow gravel. \u{1FAA8}',
+'Ankylosaurus was a living tank: body covered in bone armor, tail with a 30-kg club that could break a T-Rex\u2019s leg. \u{1F6E1}\uFE0F',
+'Deinocheirus ("terrible hands") had 70-cm claws on each arm. The complete skeleton was found only in 2014, 49 years after discovery. \u{1F9B4}'
+]},
+{id:'wow',name:'Mind-Blowing',emoji:'\u{1F92F}',css:'cat-wow',
+icons:['\u{1F92F}','\u{1F4AB}','\u{1F52C}','\u{1F308}','\u{1F4A5}','\u{1F48E}','\u{1F47E}','\u{1F9E0}'],
+facts:[
+'An octopus has 3 hearts, blue blood, and 9 brains (a mini-brain in each of its 8 tentacles). If it loses a tentacle \u2014 it grows a new one. \u{1F419}',
+'There are more trees on Earth than stars in the Milky Way. Trees: ~3 trillion. Stars in our galaxy: ~200-400 billion. \u{1F333}',
+'Honey NEVER spoils. Scientists found 3,000-year-old honey in Egyptian tombs \u2014 it was perfectly edible. \u{1F36F}',
+'Your body has more bacteria than your own cells. The ratio is roughly 1.3 to 1. You\u2019re literally more bacteria than human. \u{1F9A0}',
+'If the Sun were the size of a front door, Earth would be the size of a coin, and Jupiter would be basketball-sized. \u2600\uFE0F',
+'Bananas are radioactive. They contain potassium-40. But to get a dangerous dose, you\u2019d need to eat 10 million bananas at once. \u{1F34C}',
+'Sunlight takes 8 minutes 20 seconds to reach Earth. When you look at the Sun, you see it as it was 8 minutes ago. \u{1F31E}',
+'Human and banana DNA are 60% identical. We\u2019re genetically closer to mushrooms than to plants. \u{1F344}',
+'If you removed all empty space from atoms, all 8 billion humans would fit in the volume of a single apple. \u{1F34F}',
+'Every 7-10 years, all atoms in your body are replaced with new ones. Physically, you\u2019re not the same person you were 10 years ago. \u{1F504}',
+'The Great Pacific Garbage Patch is 3x the size of France. It contains ~80,000 tons of plastic and keeps growing. \u{1F30A}',
+'The loudest recorded event \u2014 the eruption of Krakatoa in 1883. The sound was heard 4,800 km away. The shockwave circled the Earth 4 times. \u{1F30B}',
+'A neutron star is so dense that a teaspoon of its matter weighs ~6 billion tons. Like fitting Earth\u2019s entire population into a sugar cube. \u2B50',
+'Mantis shrimp have 16 types of color receptors (humans have 3). They see ultraviolet, infrared, and circular polarization of light. \u{1F990}',
+'The Universe has a smell. According to astronauts, outer space smells like grilled steak, gunpowder, and raspberries. Due to ethyl formate molecules. \u{1F30C}',
+'Lightning is 5x hotter than the Sun\u2019s surface. Lightning: ~30,000\u00B0C. Sun\u2019s surface: ~5,500\u00B0C. \u26A1',
+'Cows kill more people per year than sharks. Cows: ~20 deaths/year. Sharks: ~5. Even vending machines are deadlier than sharks. \u{1F42E}',
+'A single glass of water contains more atoms than there are glasses of water in all of Earth\u2019s oceans. Roughly 10\u00B2\u2075 molecules per glass. \u{1F4A7}',
+'Cleopatra could theoretically have known about pizza \u2014 she lived just 30 years before the Roman Empire, which already made flatbreads with toppings. \u{1F355}',
+'Tarantulas can survive without food for up to 2 years. Cockroaches survive a week without their head \u2014 they have an open circulatory system and breathe through their body. \u{1F577}\uFE0F'
+]}
 ];
 
-// ========== STATE ==========
-let currentCat = null;
-let currentIndex = 0;
-let isFlipped = false;
-let viewed = new Set();
+// ============ STATE ============
+let cat=null,idx=0,flipped=false,streak=0;
+const viewed=new Set();
+try{const s=JSON.parse(localStorage.getItem('ff2_v')||'[]');s.forEach(x=>viewed.add(x))}catch(e){}
+try{streak=parseInt(localStorage.getItem('ff2_s'))||0}catch(e){}
+function save(){localStorage.setItem('ff2_v',JSON.stringify([...viewed]));localStorage.setItem('ff2_s',streak)}
 
-// Load from localStorage
-try {
-  const saved = JSON.parse(localStorage.getItem('flashfacts_viewed') || '[]');
-  viewed = new Set(saved);
-} catch(e) {}
-
-function saveViewed() {
-  localStorage.setItem('flashfacts_viewed', JSON.stringify([...viewed]));
+// ============ BG PARTICLES ============
+const bgC=document.getElementById('bgCanvas');
+const bgX=bgC.getContext('2d');
+let particles=[];
+function initBg(){
+  bgC.width=window.innerWidth;bgC.height=window.innerHeight;
+  particles=[];
+  const n=Math.min(80,Math.floor(bgC.width*bgC.height/12000));
+  for(let i=0;i<n;i++){
+    particles.push({
+      x:Math.random()*bgC.width,
+      y:Math.random()*bgC.height,
+      r:Math.random()*1.8+.3,
+      dx:(Math.random()-.5)*.3,
+      dy:(Math.random()-.5)*.3,
+      o:Math.random()*.4+.1
+    });
+  }
 }
-
-// ========== RENDER CATEGORIES ==========
-function renderCategories() {
-  const grid = document.getElementById('categoriesGrid');
-  grid.innerHTML = '';
-  let total = 0;
-
-  categories.forEach(cat => {
-    total += cat.facts.length;
-    const card = document.createElement('div');
-    card.className = `cat-card ${cat.cssClass}`;
-    card.onclick = () => openCategory(cat.id);
-
-    const viewedInCat = cat.facts.filter((_, i) => viewed.has(`${cat.id}_${i}`)).length;
-
-    card.innerHTML = `
-      <span class="emoji">${cat.emoji}</span>
-      <div class="name">${cat.name}</div>
-      <div class="count">${viewedInCat} / ${cat.facts.length} изучено</div>
-    `;
-    grid.appendChild(card);
+function drawBg(){
+  bgX.clearRect(0,0,bgC.width,bgC.height);
+  particles.forEach(p=>{
+    p.x+=p.dx;p.y+=p.dy;
+    if(p.x<0)p.x=bgC.width;if(p.x>bgC.width)p.x=0;
+    if(p.y<0)p.y=bgC.height;if(p.y>bgC.height)p.y=0;
+    bgX.beginPath();bgX.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgX.fillStyle=`rgba(129,140,248,${p.o})`;bgX.fill();
   });
+  // connections
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x;
+      const dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<120){
+        bgX.beginPath();
+        bgX.moveTo(particles[i].x,particles[i].y);
+        bgX.lineTo(particles[j].x,particles[j].y);
+        bgX.strokeStyle=`rgba(129,140,248,${.06*(1-d/120)})`;
+        bgX.lineWidth=.5;bgX.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawBg);
+}
+initBg();drawBg();
+window.addEventListener('resize',()=>{initBg()});
 
-  document.getElementById('totalFacts').textContent = total;
-  document.getElementById('totalViewed').textContent = viewed.size;
+// ============ CONFETTI ============
+const cfC=document.getElementById('confettiCanvas');
+const cfX=cfC.getContext('2d');
+let confetti=[];
+function resizeCf(){cfC.width=window.innerWidth;cfC.height=window.innerHeight}
+resizeCf();window.addEventListener('resize',resizeCf);
+function boom(){
+  const colors=['#818cf8','#c084fc','#f472b6','#fb923c','#34d399','#fbbf24'];
+  for(let i=0;i<100;i++){
+    confetti.push({
+      x:window.innerWidth/2,y:window.innerHeight/2,
+      vx:(Math.random()-.5)*20,
+      vy:Math.random()*-18-5,
+      r:Math.random()*6+3,
+      c:colors[Math.floor(Math.random()*colors.length)],
+      rot:Math.random()*360,
+      rv:(Math.random()-.5)*10,
+      life:1
+    });
+  }
+}
+function drawCf(){
+  cfX.clearRect(0,0,cfC.width,cfC.height);
+  confetti=confetti.filter(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.4;p.rot+=p.rv;p.life-=.008;
+    if(p.life<=0)return false;
+    cfX.save();cfX.translate(p.x,p.y);cfX.rotate(p.rot*Math.PI/180);
+    cfX.globalAlpha=p.life;
+    cfX.fillStyle=p.c;
+    cfX.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.5);
+    cfX.restore();
+    return true;
+  });
+  requestAnimationFrame(drawCf);
+}
+drawCf();
+
+// ============ RENDER HOME ============
+function renderHome(){
+  const g=document.getElementById('catsGrid');
+  g.innerHTML='';let total=0;
+  CATS.forEach(c=>{
+    total+=c.facts.length;
+    const vn=c.facts.filter((_,i)=>viewed.has(c.id+'_'+i)).length;
+    const pct=Math.round(vn/c.facts.length*100);
+    const d=document.createElement('div');
+    d.className='cat '+c.css;
+    d.onclick=()=>openCat(c.id);
+    d.innerHTML=`<span class="ic">${c.emoji}</span>
+      <div class="nm">${c.name}</div>
+      <div class="ct">${vn}/${c.facts.length} learned</div>
+      <div class="prog-mini"><div class="prog-mini-fill" style="width:${pct}%"></div></div>`;
+    g.appendChild(d);
+  });
+  document.getElementById('sTotal').textContent=total;
+  document.getElementById('sViewed').textContent=viewed.size;
+  document.getElementById('sStreak').textContent=streak;
 }
 
-// ========== OPEN CATEGORY ==========
-function openCategory(catId) {
-  currentCat = categories.find(c => c.id === catId);
-  currentIndex = 0;
-  isFlipped = false;
-
-  document.getElementById('homeScreen').classList.add('hidden');
-  document.getElementById('quizScreen').classList.add('active');
-  document.getElementById('completionScreen').style.display = 'none';
-  document.getElementById('navArea').style.display = '';
-  document.getElementById('cardContainer').style.display = '';
-
-  document.getElementById('quizTitle').innerHTML = `
-    <div class="emoji">${currentCat.emoji}</div>
-    <h2>${currentCat.name}</h2>
-  `;
-
+// ============ OPEN CATEGORY ============
+function openCat(id){
+  cat=CATS.find(c=>c.id===id);idx=0;flipped=false;
+  switchScreen('quizScreen');
+  document.getElementById('doneArea').style.display='none';
+  document.getElementById('cardWrap').style.display='';
+  document.getElementById('navArea').style.display='';
+  document.getElementById('qTitle').innerHTML=`<div class="ic">${cat.emoji}</div><h2>${cat.name}</h2>`;
   showCard();
 }
 
-// ========== SHOW CARD ==========
-function showCard() {
-  if (!currentCat) return;
-
-  if (currentIndex >= currentCat.facts.length) {
-    // Show completion
-    document.getElementById('cardContainer').style.display = 'none';
-    document.getElementById('navArea').style.display = 'none';
-    document.getElementById('completionScreen').style.display = '';
-    return;
-  }
-
-  document.getElementById('completionScreen').style.display = 'none';
-  document.getElementById('cardContainer').style.display = '';
-  document.getElementById('navArea').style.display = '';
-
-  isFlipped = false;
-  document.getElementById('flashcard').classList.remove('flipped');
-
-  const emojiIdx = currentIndex % currentCat.cardEmojis.length;
-  document.getElementById('frontEmoji').innerHTML = currentCat.cardEmojis[emojiIdx];
-  document.getElementById('backEmoji').innerHTML = currentCat.cardEmojis[emojiIdx];
-  document.getElementById('factText').innerHTML = currentCat.facts[currentIndex];
-  document.getElementById('factNum').textContent = currentIndex + 1;
-
-  // Progress
-  const progress = ((currentIndex + 1) / currentCat.facts.length * 100).toFixed(0);
-  document.getElementById('progressFill').style.width = progress + '%';
-  document.getElementById('progressText').textContent = `${currentIndex + 1} из ${currentCat.facts.length}`;
-
-  // Animate
-  const container = document.getElementById('cardContainer');
-  container.classList.remove('animate-in');
-  void container.offsetWidth; // force reflow
-  container.classList.add('animate-in');
+function switchScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+  });
+  setTimeout(()=>{
+    document.getElementById(id).classList.add('active');
+  },50);
 }
 
-// ========== FLIP ==========
-function flipCard() {
-  if (!currentCat || currentIndex >= currentCat.facts.length) return;
+// ============ SHOW CARD ============
+function showCard(){
+  if(!cat)return;
+  if(idx>=cat.facts.length){
+    document.getElementById('cardWrap').style.display='none';
+    document.getElementById('navArea').style.display='none';
+    const vn=cat.facts.filter((_,i)=>viewed.has(cat.id+'_'+i)).length;
+    document.getElementById('doneScore').textContent=vn+'/'+cat.facts.length;
+    document.getElementById('doneArea').style.display='';
+    boom();
+    return;
+  }
+  document.getElementById('doneArea').style.display='none';
+  document.getElementById('cardWrap').style.display='';
+  document.getElementById('navArea').style.display='';
 
-  isFlipped = !isFlipped;
-  document.getElementById('flashcard').classList.toggle('flipped');
+  flipped=false;
+  const card=document.getElementById('card');
+  card.className='card';
 
-  if (isFlipped) {
-    const key = `${currentCat.id}_${currentIndex}`;
-    if (!viewed.has(key)) {
-      viewed.add(key);
-      saveViewed();
+  const ei=idx%cat.icons.length;
+  document.getElementById('fIc').textContent=cat.icons[ei];
+  document.getElementById('bIc').textContent=cat.icons[ei];
+  document.getElementById('bText').textContent=cat.facts[idx];
+  document.getElementById('fNum').textContent=idx+1;
+  document.getElementById('qCounter').textContent=(idx+1)+' / '+cat.facts.length;
+
+  const pct=Math.round((idx+1)/cat.facts.length*100);
+  document.getElementById('progFill').style.width=pct+'%';
+
+  // slide in animation
+  const wrap=document.getElementById('cardWrap');
+  wrap.style.animation='none';
+  wrap.offsetHeight;
+  wrap.style.animation='cardIn .4s ease forwards';
+}
+
+// ============ FLIP ============
+function flip(){
+  if(!cat||idx>=cat.facts.length)return;
+  flipped=!flipped;
+  const card=document.getElementById('card');
+  card.classList.toggle('flipped');
+  if(flipped){
+    const key=cat.id+'_'+idx;
+    if(!viewed.has(key)){
+      viewed.add(key);streak++;save();
+      if(streak%5===0){
+        showStreak(streak+' facts streak! \u{1F525}');
+      }
+      if(streak%10===0)boom();
     }
   }
 }
 
-// ========== NAVIGATION ==========
-function nextFact() {
-  if (!currentCat) return;
-  if (currentIndex < currentCat.facts.length - 1) {
-    currentIndex++;
+// ============ NAV ============
+function next(){
+  if(!cat)return;
+  const card=document.getElementById('card');
+  card.classList.add('swipe-left');
+  setTimeout(()=>{
+    if(idx<cat.facts.length-1)idx++;
+    else idx=cat.facts.length;
     showCard();
-  } else {
-    currentIndex = currentCat.facts.length;
-    showCard();
-  }
+  },300);
+}
+function prev(){
+  if(!cat||idx<=0)return;
+  const card=document.getElementById('card');
+  card.classList.add('swipe-right');
+  setTimeout(()=>{idx--;showCard()},300);
+}
+function shuffle(){
+  if(!cat)return;
+  idx=Math.floor(Math.random()*cat.facts.length);
+  const card=document.getElementById('card');
+  card.style.transition='transform .3s';
+  card.style.transform='rotate(10deg) scale(.9)';
+  setTimeout(()=>{card.style.transform='';showCard()},300);
+}
+function goHome(){
+  cat=null;
+  switchScreen('homeScreen');
+  renderHome();
 }
 
-function prevFact() {
-  if (!currentCat || currentIndex <= 0) return;
-  currentIndex--;
-  showCard();
+// ============ STREAK TOAST ============
+function showStreak(t){
+  const el=document.getElementById('streakToast');
+  el.textContent=t;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
 }
 
-function goHome() {
-  document.getElementById('quizScreen').classList.remove('active');
-  document.getElementById('homeScreen').classList.remove('hidden');
-  currentCat = null;
-  renderCategories();
-}
+// ============ SWIPE ============
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;ty=e.changedTouches[0].screenY},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=tx-e.changedTouches[0].screenX;
+  const dy=ty-e.changedTouches[0].screenY;
+  if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx))return;
+  if(cat){dx>0?next():prev()}
+},{passive:true});
 
-// ========== SWIPE ==========
-let touchStartX = 0;
-let touchEndX = 0;
-
-document.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipe();
-}, { passive: true });
-
-function handleSwipe() {
-  const diff = touchStartX - touchEndX;
-  if (Math.abs(diff) < 50) return;
-
-  if (currentCat) {
-    if (diff > 0) nextFact();
-    else prevFact();
-  }
-}
-
-// ========== KEYBOARD ==========
-document.addEventListener('keydown', e => {
-  if (!currentCat) return;
-  if (e.key === 'ArrowRight' || e.key === ' ') {
-    e.preventDefault();
-    if (!isFlipped) flipCard();
-    else nextFact();
-  }
-  if (e.key === 'ArrowLeft') {
-    e.preventDefault();
-    prevFact();
-  }
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    flipCard();
-  }
-  if (e.key === 'Escape') {
-    goHome();
-  }
+// ============ KEYBOARD ============
+document.addEventListener('keydown',e=>{
+  if(!cat)return;
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();flipped?next():flip()}
+  if(e.key==='ArrowLeft'){e.preventDefault();prev()}
+  if(e.key==='Enter'){e.preventDefault();flip()}
+  if(e.key==='Escape')goHome();
 });
 
-// ========== TOAST ==========
-function showToast(text) {
-  const toast = document.getElementById('toast');
-  toast.textContent = text;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
+// ============ CARD ANIM KEYFRAME ============
+const style=document.createElement('style');
+style.textContent=`@keyframes cardIn{from{opacity:0;transform:translateX(40px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}`;
+document.head.appendChild(style);
 
-// ========== INIT ==========
-renderCategories();
+// ============ INIT ============
+renderHome();
 </script>
 </body>
 </html>
